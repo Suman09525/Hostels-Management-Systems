@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="page-header">
+  <h1>Database Viewer</h1>
+  <div class="d-flex gap-8">
+    <a class="btn btn-outline btn-sm" href="{{ url_for('admin.admin_tools') }}">
+      <i class="bi bi-arrow-left"></i> Back to Admin Tools
+    </a>
+  </div>
+</div>
+
+<div class="g3 mb-16">
+
+  <!-- Tables List -->
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-title">
+        <i class="bi bi-table" style="color:var(--accent);margin-right:6px;"></i>Tables
+      </div>
+    </div>
+
+    {% if not tables %}
+    <p style="padding:16px;color:var(--muted);font-size:13px;margin:0;">No tables found in this database.</p>
+    {% else %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Table</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in tables %}
+          <tr>
+            <td>
+              <a href="{{ url_for('admin.admin_db_view', table=t) }}"{% if t == selected_table %} style="font-weight:600;color:var(--accent);"{% endif %}>
+                {{ t }}
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Table Data -->
+  <div class="card" style="grid-column: span 2;">
+    <div class="card-hd">
+      <div class="card-title">
+        <i class="bi bi-eye" style="color:var(--teal);margin-right:6px;"></i>
+        Preview{% if selected_table %}: <code>{{ selected_table }}</code><span style="font-size:11px;color:var(--muted);font-weight:normal;">&nbsp;· {{ rows|length }} row(s), max {{ row_limit }}</span>{% endif %}
+      </div>
+    </div>
+
+    {% if viewer_error %}
+    <div class="alert alert-warning" style="margin:12px 14px;"><i class="bi bi-exclamation-triangle-fill"></i> {{ viewer_error }}</div>
+    {% elif selected_table %}
+
+    {% if not columns %}
+    <p style="padding:16px;color:gray;text-align:center;">No columns or empty result.</p>
+    {% else %}
+    <div class="table-wrap" style="max-height:65vh;overflow:auto;">
+      <table>
+        <thead>
+          <tr>
+            {% for c in columns %}
+            <th>{{ c }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            {% for c in columns %}
+            <td style="white-space:pre-wrap;word-break:break-word;max-width:320px;font-size:12.5px;">{{ r[c] if r[c] is not none else '' }}</td>
+            {% endfor %}
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="{{ columns|length }}" style="text-align:center;color:gray;padding:20px;">
+              No rows in this table (or limit reached with no matching rows).
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+
+      </table>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <p style="padding:16px;color:var(--muted);">Select a table from the list.</p>
+    {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}
